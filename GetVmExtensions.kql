@@ -1,0 +1,10 @@
+// This query is for Azure Resource Manager, not for Azure Monitor / Log Analytics
+// Run this query in Azure Resource Graph 
+Resources
+| where (type =~ 'Microsoft.Compute/virtualMachines/extensions') or (type =~ 'Microsoft.HybridCompute/machines/extensions')
+| extend vmName = split (id, "/")[-3]
+| where vmName !~ ''
+| extend extensionProvisioningState = tostring(properties.provisioningState)
+| extend vmType = iif((type =~ 'Microsoft.Compute/virtualMachines/extensions'),"VM","Arc")
+| project vmName, vmType,  extensionName = name,  extensionProvisioningState
+| order by vmType asc
